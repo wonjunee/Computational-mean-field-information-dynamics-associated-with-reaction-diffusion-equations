@@ -15,7 +15,8 @@ def get_circle(center, radius):
     x = radius * n1 * np.cos( angle ) + center[0] * n1 - 0.5
     y = radius * n2 * np.sin( angle ) + center[1] * n2 - 0.5
     return x,y
-    
+
+
 directory="./data"
 
 #--------------------------------------------------
@@ -83,8 +84,6 @@ def save_animation():
 
     vmin = np.min(rho)
     vmax = np.max(rho)
-
-    cax.set_clim(0, vmax)
     
     # animation function.  This is called sequentially
     def animate(n):
@@ -93,7 +92,7 @@ def save_animation():
         
         # cax.set_clim(0, vmax)
         # cax.set_clim(vmin, vmax)
-        # cax.set_clim(np.min(rho[n]), np.max(rho[n]))
+        cax.set_clim(np.min(rho[n]), np.max(rho[n]))
         
         
 
@@ -140,4 +139,4 @@ def save_animation_1d():
                                    frames=nt, interval=100, blit=True)
     anim.save("video2.mp4", fps=10)
 
-save_animation()
+save_animation_1d()

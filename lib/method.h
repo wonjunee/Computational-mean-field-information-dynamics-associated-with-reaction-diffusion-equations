@@ -1,7 +1,7 @@
 #ifndef METHOD_H
 #define METHOD_H
 #include <iostream>
-#include <fstream>
+
 #include <iomanip>
 #include <cmath>
 #include <time.h>
@@ -264,63 +264,41 @@ public:
     inline double calculate_V1_rho(const double rhoval){
 
 // ex1
-        // return rhoval;
+        return rhoval;
 
 // ex2
-        double alphaV1=1; return std::pow(rhoval,alphaV1);
+        // double alphaV1=1; return std::pow(rhoval,alphaV1);
     }
 
     inline double calculate_V1_prime_rho(const double rhoval){
 
 // ex1
-        // return 1;
+        return 1;
 
 // ex2
-        double alphaV1=1; return alphaV1 * std::pow(rhoval,alphaV1-1);
+        // double alphaV1=1; return alphaV1 * std::pow(rhoval,alphaV1-1);
         // return 0;
     }
 
     inline double calculate_V1_double_prime_rho(const double rhoval){
-        double alphaV1=1; return alphaV1 * (alphaV1-1) * std::pow(rhoval,alphaV1-2);
+// ex1
+        return 0;
+// ex2
+        // double alphaV1=1; return alphaV1 * (alphaV1-1) * std::pow(rhoval,alphaV1-2);
     }
 
 
     inline double calculate_V2_rho(const double rhoval){
-
-// ex1
-        // if(rhoval == 1) return 1;
-        // return rhoval * (rhoval - 1) / (log(rhoval));
-
-// ex3
-        double alphaV2=3.0; return std::pow(rhoval,alphaV2);
+        return rhoval;
     }
 
     inline double calculate_V2_prime_rho(const double rhoval){
-
-// ex1
-        // if(rhoval == 1) return 1.5;
-        // double log_rho = log(rhoval);
-        // double numer = (2.0*rhoval - 1.0) * log_rho - (rhoval - 1);
-        // double denom = log_rho * log_rho;
-        // return numer/denom;
-
-// ex3
-        double alphaV2=3.0; return alphaV2 * std::pow(rhoval,alphaV2-1);
+        return 1;
     }
 
 
     inline double calculate_V2_double_prime_rho(const double rhoval){
-
-// ex1
-        // if(rhoval == 1) return 5.0/6.0;
-        // double log_rho = log(rhoval);
-        // double numer = -2 + 2*rhoval + log_rho - 3*rhoval*log_rho + 2*rhoval*log_rho*log_rho;
-        // double denom = rhoval * log_rho * log_rho * log_rho;
-        // return numer/denom;
-
-// ex3
-        // return 0;
-        double alphaV2=3.0; return alphaV2 * (alphaV2-1) * std::pow(rhoval,alphaV2-2);
+        return 0;
     }
 
     /**
@@ -331,11 +309,10 @@ public:
     void update_rho_for_loop_per_nt(double* rho, const double* rhotmp, const double* mx, const double* my, const double* m2, const int n_start, const int n_end){
 
         // using newton's method
-        const int max_it_newton = 50;
+        const int max_it_newton = 100;
         const double TOL_newton = 1e-8;
 
         for(int n=n_start;n<n_end;++n){
-
             if(n==0 || n==nt-1) continue;
             for(int i=0;i<n2;++i){
                 for(int j=0;j<n1;++j){
@@ -354,7 +331,7 @@ public:
                     double rhotmpval = rhotmp[idx];
 
                     for(int iter_newton=0;iter_newton<max_it_newton;++iter_newton){
-                        
+
                         // get the rest of the files
                         double rhoval     = rho[idx];                       // rho(x)
                         double V1val      = calculate_V1_rho(rhoval);       // V1(rho)
@@ -376,14 +353,10 @@ public:
 
                         
 
-                        double newrhoval = rhoval - 0.9 * F_rho / F_prime_rho;
-
-                        if(iter_newton==3) printf("newton %d, error: %e\n", iter_newton, (rho[idx] - newrhoval)*(rho[idx] - newrhoval));
+                        double newrhoval = rhoval - 0.5 * F_rho / F_prime_rho;
 
                         // update rho
-                        rho[idx] = fmax(1e-3, newrhoval);
-
-                        
+                        rho[idx] = fmax(1e-5, newrhoval);
                     }
                 }
             }
@@ -508,7 +481,7 @@ public:
                     calculate_rho_related(mval, Dtphi, n, i, j, mx.get(), my.get());
                     double m2val  = m2 [idx];
                     if(rhoval > 1e-8){
-                        sum += 0.5 * (mval*mval)/V1val + 0.5 * (m2val*m2val)/V2val + 0.1 * rhoval * (log(rhoval) - 1);
+                        sum += 0.5 * (mval*mval)/V1val + 0.5 * (m2val*m2val)/V2val;
                     }
                     
                 }
@@ -554,9 +527,6 @@ public:
 
         double smooth_param = 1e-6;
 
-        std::ofstream file_energy;
-        file_energy.open("data/energy.dat");
-
         for(iterPDHG=0; iterPDHG<max_iteration; ++iterPDHG){
 
 
@@ -600,8 +570,6 @@ public:
             
             // CALCULATE ENERGY
             energy = calculate_energy(rho, mx, my, m2);
-
-            file_energy << energy << ",";
             error=fabs((energy-previous_energy)/previous_energy);
             previous_energy=energy;
 
@@ -620,7 +588,6 @@ public:
             }
             
         }
-        file_energy.close();
 
         cout<<"The method is done!!"<<endl;
         display_log(iterPDHG,  tau,  sigma,  energy,  error, sanity_value);
